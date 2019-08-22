@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { CoursesService } from '../courses.service';
+import { SettingsEntry } from '../interfaces/settings-entry';
+import { Events } from '@ionic/angular';
 
 @Component({
   selector: 'app-settings',
@@ -7,9 +10,17 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SettingsPage implements OnInit {
 
-  constructor() { }
+  allCourses: Set<SettingsEntry> = new Set([]);
+
+  constructor(
+    private coursesSvc: CoursesService,
+    private events: Events
+  ) { }
 
   ngOnInit() {
+    this.events.subscribe('data-ready', () => {
+      this.allCourses = this.coursesSvc.getAllCourses();
+    });
   }
 
 }
