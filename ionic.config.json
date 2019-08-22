@@ -1,5 +1,8 @@
 {
   "name": "cw-uurrooster",
-  "integrations": {},
+  "integrations": {
+    "cordova": {},
+    "capacitor": {}
+  },
   "type": "angular"
 }
