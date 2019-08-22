@@ -10,14 +10,14 @@
 <ion-content>
   <ion-list>
     <ion-item-sliding *ngFor="let course of allCourses">
-      <ion-item (click)="onCourseSelected(course.opo)">
+
+      <ion-item (click)="onCourseSelected(course.opo)" *ngIf="selectedCourses.includes(course.opo)">
 
         <ion-grid>
           <ion-row>
             <ion-col size="3">
               <h3>{{ course.opo }}</h3>
               <h3>{{ course.ola }}</h3>
-              <h3 *ngIf="selectedCourses.includes(course.opo)">SELECTED</h3>
             </ion-col>
 
             <ion-col text-wrap>
@@ -28,6 +28,24 @@
         </ion-grid>
 
       </ion-item>
+
+      <ion-item (click)="onCourseSelected(course.opo)" *ngIf="!selectedCourses.includes(course.opo)">
+
+          <ion-grid>
+              <ion-row>
+                <ion-col size="3">
+                  <h3 class="unselected">{{ course.opo }}</h3>
+                  <h3 class="unselected">{{ course.ola }}</h3>
+                </ion-col>
+    
+                <ion-col text-wrap>
+                  <h3 class="unselected">{{ course.courseName }}</h3>
+                </ion-col>
+    
+              </ion-row>
+            </ion-grid>
+  
+        </ion-item>
 
 
 

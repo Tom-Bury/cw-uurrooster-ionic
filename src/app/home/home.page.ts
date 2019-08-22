@@ -3,21 +3,8 @@ import {
   OnInit
 } from '@angular/core';
 import {
-  HTTP
-} from '@ionic-native/http/ngx';
-import {
   LoadingController, Events
 } from '@ionic/angular';
-import {
-  from
-} from 'rxjs';
-import {
-  finalize
-} from 'rxjs/operators';
-import {
-  HttpClientModule,
-  HttpClient
-} from '@angular/common/http';
 import {
   ParsedEntry
 } from '../interfaces/parsed-entry';
