@@ -11,6 +11,7 @@ import { Events } from '@ionic/angular';
 export class SettingsPage implements OnInit {
 
   allCourses: SettingsEntry[] = [];
+  selectedCourses: string[] = [];
 
   constructor(
     public coursesSvc: CoursesService,
@@ -19,6 +20,12 @@ export class SettingsPage implements OnInit {
 
   ngOnInit() {
     this.allCourses = this.coursesSvc.getAllCourses();
+    this.selectedCourses = this.coursesSvc.getFilter();
+  }
+
+  onCourseSelected(opo: string) {
+    this.coursesSvc.toggleEntrySelectionInFilter(opo);
+    this.selectedCourses = this.coursesSvc.getFilter();
   }
 
 }

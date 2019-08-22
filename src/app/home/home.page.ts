@@ -52,13 +52,15 @@ export class HomePage implements OnInit {
     await spinner.present();
 
     this.events.subscribe('data-ready', () => {
-      console.log("Home event rcvd");
-      
       this.selectedEntries = this.coursesSvc.getSelectedEntries();
       spinner.dismiss();
     });
 
     this.coursesSvc.init();
+  }
+
+  ionViewWillEnter() {
+    this.selectedEntries = this.coursesSvc.getSelectedEntries();
   }
 
 }

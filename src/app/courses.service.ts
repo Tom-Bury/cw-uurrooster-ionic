@@ -1,14 +1,35 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { HTTP } from '@ionic-native/http/ngx';
-import { from } from 'rxjs';
+import {
+  Injectable
+} from '@angular/core';
+import {
+  HttpClient
+} from '@angular/common/http';
+import {
+  HTTP
+} from '@ionic-native/http/ngx';
+import {
+  from
+} from 'rxjs';
 
-import { ParsedEntry } from './interfaces/parsed-entry';
-import { CourseEntry } from './interfaces/course-entry';
+import {
+  ParsedEntry
+} from './interfaces/parsed-entry';
+import {
+  CourseEntry
+} from './interfaces/course-entry';
 
-import { parse } from 'parse5';
-import { Events } from '@ionic/angular';
-import { SettingsEntry } from './interfaces/settings-entry';
+import {
+  parse
+} from 'parse5';
+import {
+  Events
+} from '@ionic/angular';
+import {
+  SettingsEntry
+} from './interfaces/settings-entry';
+import {
+  filter
+} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -20,9 +41,9 @@ export class CoursesService {
   courseEntries: CourseEntry[] = [];
   selectedEntries: CourseEntry[] = [];
 
-  allCourseOPOs: Set<string> = new Set([]);
+  allCourseOPOs: Set < string > = new Set([]);
   allCourses: SettingsEntry[] = [];
-  filter: string[] = ['H04G1B'];
+  coursesFilter: string[] = [];
 
   url1 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html';
   startWeek1 = 39;
@@ -46,21 +67,10 @@ export class CoursesService {
     private oldHttp: HttpClient,
     private http: HTTP,
     private events: Events
-  ) { }
+  ) {}
 
   init() {
-    return this.fetchData()
-      .subscribe(data => {
-        this.rawData = data.data;
-        this.parseData();
-        this.makeCourseEntries();
-        this.filterCourseEntries();
-        this.sortCourseEntries();
-        this.sendEvent();
-      }, err => {
-        console.log('Native Call error: ', err);
-        this.getDataFromAssets();
-      });
+    this.fetchData();
   }
 
   sendEvent() {
@@ -68,7 +78,23 @@ export class CoursesService {
   }
 
   getSelectedEntries(): CourseEntry[] {
+    this.filterCourseEntries();
+    this.sortCourseEntries();
     return this.selectedEntries;
+  }
+
+  toggleEntrySelectionInFilter(opo) {
+    if (this.coursesFilter.includes(opo)) {
+      this.coursesFilter = this.coursesFilter.filter(o => {
+        return o !== opo;
+      });
+    } else {
+      this.coursesFilter.push(opo);
+    }
+  }
+
+  getFilter() {
+    return this.coursesFilter;
   }
 
   getAllCourses() {
@@ -85,14 +111,16 @@ export class CoursesService {
 
   fetchData() {
     const httpCall = this.http.get('URL', {}, {});
-    return from(httpCall);
-    // .subscribe(data => {
-    //   this.rawData = data.data;
-    // }, err => {
-    //   console.log('Native Call error: ', err);
-    //   console.log('GETTING DATA FROM ASSETS');
-    //   this.getDataFromAssets();
-    // });
+    from(httpCall)
+      .subscribe(data => {
+        this.rawData = data.data;
+        this.parseData();
+        this.makeCourseEntries();
+        this.sendEvent();
+      }, err => {
+        console.log('Native Call error: ', err);
+        this.getDataFromAssets();
+      });
   }
 
   getDataFromAssets() {
@@ -106,8 +134,6 @@ export class CoursesService {
 
       this.parseData();
       this.makeCourseEntries();
-      this.filterCourseEntries();
-      this.sortCourseEntries();
       this.sendEvent();
     });
   }
@@ -194,7 +220,7 @@ export class CoursesService {
 
   filterCourseEntries() {
     this.selectedEntries = this.courseEntries.filter(entry => {
-      return this.filter.includes(entry.opo);
+      return this.coursesFilter.includes(entry.opo);
     });
   }
 
