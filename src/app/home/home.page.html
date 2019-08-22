@@ -1,39 +1,48 @@
 <ion-header>
   <ion-toolbar color="primary">
+
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['/settings']">
+        <ion-icon name="settings"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
     <ion-title>
       Uurrooster
     </ion-title>
+    
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
-    <ion-list>
-        <ion-item-sliding *ngFor="let course of selectedEntries">
-          <ion-item>
 
-            <ion-grid>
-              <ion-row>
-                <ion-col size="4">
-                  <h3>{{ course.dateString }}</h3>
-                  <h5>{{ course.timeStart }} - {{ course.timeEnd }}</h5>
-                  <h5>{{ course.room }}</h5>
-                </ion-col>
+  <ion-list>
+    <ion-item-sliding *ngFor="let course of selectedEntries">
+      <ion-item>
 
-                <ion-col text-wrap>
-                  <h3>{{ course.courseName }}</h3>
-                </ion-col>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="4">
+              <h3>{{ course.dateString }}</h3>
+              <h5>{{ course.timeStart }} - {{ course.timeEnd }}</h5>
+              <h5>{{ course.room }}</h5>
+            </ion-col>
 
-              </ion-row>
-            </ion-grid>
+            <ion-col text-wrap>
+              <h3>{{ course.courseName }}</h3>
+            </ion-col>
 
-          </ion-item>
+          </ion-row>
+        </ion-grid>
+
+      </ion-item>
 
 
 
-          <ion-item-options side="end">
-            <ion-item-option>TODO</ion-item-option>
-          </ion-item-options>
-        </ion-item-sliding>
-      </ion-list>
+      <ion-item-options side="end">
+        <ion-item-option>TODO</ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
 </ion-content>

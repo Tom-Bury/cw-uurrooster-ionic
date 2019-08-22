@@ -42,7 +42,7 @@ export class HomePage implements OnInit {
 
   constructor(
     private loadingCtrl: LoadingController,
-    private coursesSvc: CoursesService,
+    public coursesSvc: CoursesService,
     private events: Events
   ) {
   }
@@ -52,6 +52,8 @@ export class HomePage implements OnInit {
     await spinner.present();
 
     this.events.subscribe('data-ready', () => {
+      console.log("Home event rcvd");
+      
       this.selectedEntries = this.coursesSvc.getSelectedEntries();
       spinner.dismiss();
     });

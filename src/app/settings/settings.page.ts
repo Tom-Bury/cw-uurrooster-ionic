@@ -10,17 +10,15 @@ import { Events } from '@ionic/angular';
 })
 export class SettingsPage implements OnInit {
 
-  allCourses: Set<SettingsEntry> = new Set([]);
+  allCourses: SettingsEntry[] = [];
 
   constructor(
-    private coursesSvc: CoursesService,
+    public coursesSvc: CoursesService,
     private events: Events
   ) { }
 
   ngOnInit() {
-    this.events.subscribe('data-ready', () => {
-      this.allCourses = this.coursesSvc.getAllCourses();
-    });
+    this.allCourses = this.coursesSvc.getAllCourses();
   }
 
 }

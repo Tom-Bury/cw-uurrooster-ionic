@@ -19,6 +19,9 @@ export class CoursesService {
   parsedEntries: ParsedEntry[] = [];
   courseEntries: CourseEntry[] = [];
   selectedEntries: CourseEntry[] = [];
+
+  allCourseOPOs: Set<string> = new Set([]);
+  allCourses: SettingsEntry[] = [];
   filter: string[] = ['H04G1B'];
 
   url1 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html';
@@ -56,7 +59,6 @@ export class CoursesService {
         this.sendEvent();
       }, err => {
         console.log('Native Call error: ', err);
-        console.log('GETTING DATA FROM ASSETS');
         this.getDataFromAssets();
       });
   }
@@ -67,7 +69,19 @@ export class CoursesService {
 
   getSelectedEntries(): CourseEntry[] {
     return this.selectedEntries;
-  } 
+  }
+
+  getAllCourses() {
+    return this.allCourses.sort((o1, o2) => {
+      if (o1.courseName < o2.courseName) {
+        return -1;
+      } else if (o1.courseName > o2.courseName) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+  }
 
   fetchData() {
     const httpCall = this.http.get('URL', {}, {});
@@ -164,6 +178,15 @@ export class CoursesService {
         };
 
         this.courseEntries.push(courseEntry);
+
+        if (!this.allCourseOPOs.has(parsedEntry.opo)) {
+          this.allCourseOPOs.add(parsedEntry.opo);
+          this.allCourses.push({
+            courseName: parsedEntry.courseName,
+            ola: parsedEntry.ola,
+            opo: parsedEntry.opo
+          });
+        }
       });
 
     });
@@ -196,20 +219,5 @@ export class CoursesService {
     return [new Date(year, 0, day, +start[0], +start[1]), new Date(year, 0, day, +end[0], +end[1])];
   }
 
-
-  getAllCourses() {
-    const allOPOs = new Set([]);
-
-    this.courseEntries.forEach(entry => {
-      const settingsEntry: SettingsEntry = {
-        courseName: entry.courseName,
-        ola: entry.ola,
-        opo: entry.opo
-      };
-      allOPOs.add(settingsEntry);
-    });
-
-    return allOPOs;
-  }
 
 }
