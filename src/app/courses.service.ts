@@ -80,6 +80,7 @@ export class CoursesService {
   getSelectedEntries(): CourseEntry[] {
     this.filterCourseEntries();
     this.sortCourseEntries();
+    this.addDaySeparators();
     return this.selectedEntries;
   }
 
@@ -245,5 +246,32 @@ export class CoursesService {
     return [new Date(year, 0, day, +start[0], +start[1]), new Date(year, 0, day, +end[0], +end[1])];
   }
 
+  addDaySeparators() {
+    const separatedCourseEntries: CourseEntry[] = [];
+    let newDay = true;
+
+    let i;
+    for (i = 0; i < this.selectedEntries.length; i++) {
+      const currEntry = this.selectedEntries[i];
+
+      if (newDay) {
+        const dividerEntry = {... currEntry};
+        dividerEntry.courseName = '$$DIVIDER$$';
+        separatedCourseEntries.push(dividerEntry);
+      }
+
+      if (i < this.selectedEntries.length - 1) {
+        const nextEntry = this.selectedEntries[i + 1];
+        newDay = nextEntry.dateString !== currEntry.dateString;
+      }
+      else {
+        newDay = false;
+      }
+
+      separatedCourseEntries.push(currEntry);
+    }
+
+    this.selectedEntries = separatedCourseEntries;
+  }
 
 }

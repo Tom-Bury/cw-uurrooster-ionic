@@ -19,7 +19,11 @@
 
   <ion-list>
     <ion-item-sliding *ngFor="let course of selectedEntries">
-      <ion-item>
+      <ion-list-header *ngIf="course.courseName === '$$DIVIDER$$'" color="light">
+        <ion-label>{{ course.day}} {{ course.dateString }}</ion-label>
+      </ion-list-header>
+
+      <ion-item *ngIf="course.courseName !== '$$DIVIDER$$'">
 
         <ion-grid>
           <ion-row>
