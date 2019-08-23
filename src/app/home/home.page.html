@@ -10,7 +10,7 @@
     <ion-title>
       Uurrooster
     </ion-title>
-    
+
   </ion-toolbar>
 </ion-header>
 
@@ -18,7 +18,69 @@
 
 
   <ion-list>
-    <ion-item-sliding *ngFor="let course of selectedEntries">
+
+
+
+    <div *ngFor="let day of selectedEntries">
+
+      <ion-list-header color="light">
+        <ion-label>{{ day[0].day }} {{ day[0].dateString }}</ion-label>
+      </ion-list-header>
+
+      <ion-item-sliding *ngFor="let course of day.slice(1)">
+        <ion-item>
+
+          <ion-grid>
+            <ion-row>
+              <ion-col *ngIf="!course.overlap" size="4">
+                <h3>{{ course.timeStart }} - {{ course.timeEnd }}</h3>
+                <h5>{{ course.room }}</h5>
+              </ion-col>
+
+              <ion-col *ngIf="course.overlap" size="4" class="overlap">
+                <h3>{{ course.dateString }}</h3>
+                <h3>{{ course.timeStart }} - {{ course.timeEnd }}</h3>
+                <h5>{{ course.room }}</h5>
+              </ion-col>
+
+              <ion-col text-wrap>
+                <h3>{{ course.courseName }}</h3>
+              </ion-col>
+
+            </ion-row>
+          </ion-grid>
+
+        </ion-item>
+
+        <ion-item-options side="end">
+          <ion-item-option>Hi :)</ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- <ion-item-sliding *ngFor="let course of selectedEntries">
       <ion-list-header *ngIf="course.courseName === '$$DIVIDER$$'" color="light">
         <ion-label>{{ course.day}} {{ course.dateString }}</ion-label>
       </ion-list-header>
@@ -27,11 +89,17 @@
 
         <ion-grid>
           <ion-row>
-            <ion-col size="4">
+            <ion-col *ngIf="!course.overlap" size="4">
+              <h3>{{ course.dateString }}</h3>
               <h3>{{ course.timeStart }} - {{ course.timeEnd }}</h3>
               <h5>{{ course.room }}</h5>
-              <h5 *ngIf="course.overlap">OVERLAP</h5>
             </ion-col>
+
+            <ion-col *ngIf="course.overlap" size="4" class="overlap">
+                <h3>{{ course.dateString }}</h3>
+                <h3>{{ course.timeStart }} - {{ course.timeEnd }}</h3>
+                <h5>{{ course.room }}</h5>
+              </ion-col>
 
             <ion-col text-wrap>
               <h3>{{ course.courseName }}</h3>
@@ -42,11 +110,9 @@
 
       </ion-item>
 
-
-
       <ion-item-options side="end">
         <ion-item-option>TODO</ion-item-option>
       </ion-item-options>
-    </ion-item-sliding>
+    </ion-item-sliding> -->
   </ion-list>
 </ion-content>

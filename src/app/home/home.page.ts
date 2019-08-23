@@ -24,7 +24,7 @@ export class HomePage implements OnInit {
   rawData = '';
   parsedData: ParsedEntry[] = [];
   courseEntries: CourseEntry[] = [];
-  selectedEntries: CourseEntry[] = [];
+  selectedEntries: CourseEntry[][] = [];
 
 
   constructor(
@@ -40,6 +40,8 @@ export class HomePage implements OnInit {
 
     this.events.subscribe('data-ready', () => {
       this.selectedEntries = this.coursesSvc.getSelectedEntries();
+      console.log(this.selectedEntries);
+      
       spinner.dismiss();
     });
 
@@ -48,6 +50,7 @@ export class HomePage implements OnInit {
 
   ionViewWillEnter() {
     this.selectedEntries = this.coursesSvc.getSelectedEntries();
+    console.log(this.selectedEntries);
   }
 
 }
