@@ -158,7 +158,7 @@ export class CoursesService {
             const data = col.childNodes[0].rawText;
             courseData.push(data);
             console.log(data);
-          } else if (true) {
+          } else if (col.toString() !== '<td></td>') {
             // Week columns
             const week = colNb - this.NB_NON_WEEK_COLS + this.START_WEEK;
             weekData.push(week);
