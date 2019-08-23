@@ -19,9 +19,6 @@ import {
 } from './interfaces/course-entry';
 
 import {
-  parse
-} from 'parse5';
-import {
   Events
 } from '@ionic/angular';
 import {
@@ -30,6 +27,9 @@ import {
 import {
   filter
 } from 'rxjs/operators';
+
+
+import { parse } from 'node-html-parser';
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +43,7 @@ export class CoursesService {
 
   allCourseOPOs: Set < string > = new Set([]);
   allCourses: SettingsEntry[] = [];
-  coursesFilter: string[] = [];
+  coursesFilter: string[] = ['H04G1B'];
 
   url1 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html';
   startWeek1 = 39;
@@ -80,6 +80,7 @@ export class CoursesService {
   getSelectedEntries(): CourseEntry[] {
     this.filterCourseEntries();
     this.sortCourseEntries();
+    this.markOverlap();
     this.addDaySeparators();
     return this.selectedEntries;
   }
@@ -141,32 +142,34 @@ export class CoursesService {
 
   parseData() {
     const parsedData = parse(this.rawData);
-    const table = parsedData.childNodes[0].childNodes[1].childNodes[4];
-    const tableRows = table.childNodes[1].childNodes.filter(node => node.nodeName !== '#text').slice(3);
+    const table = parsedData.childNodes[0].childNodes[5];
+    const tableRows = table.childNodes.filter(row => row.nodeType !== 3).slice(3);
 
     tableRows.forEach(row => {
-      const cols = row.childNodes;
-      const courseData: string[] = [];
-      const weekData: number[] = [];
-      let colNb = 0;
+        const cols = row.childNodes;
+        const courseData: string[] = [];
+        const weekData: number[] = [];
+        let colNb = 0;
 
-      cols.forEach(entry => {
-        if (entry.childNodes.length > 0) {
-          // First columns
-          const data = entry.childNodes[0].value;
-          courseData.push(data);
-          // console.log(data);
-        } else if (entry.attrs.length > 0) {
-          // Week columns
-          const week = colNb - this.NB_NON_WEEK_COLS + this.START_WEEK;
-          weekData.push(week);
-          // console.log(week);
-        }
-        colNb++;
-      });
+        cols.forEach(col => {
 
-      this.parsedEntries.push(this.makeParsedEntry(courseData, weekData));
+          if (col.childNodes.length > 0) {
+            // First columns
+            const data = col.childNodes[0].rawText;
+            courseData.push(data);
+            console.log(data);
+          } else if (true) {
+            // Week columns
+            const week = colNb - this.NB_NON_WEEK_COLS + this.START_WEEK;
+            weekData.push(week);
+            console.log(week);
+          }
+          colNb++;
+        });
+
+        this.parsedEntries.push(this.makeParsedEntry(courseData, weekData));
     });
+
   }
 
   makeParsedEntry(parsedData: string[], parsedWeeks: number[]): ParsedEntry {
@@ -182,6 +185,7 @@ export class CoursesService {
   }
 
   makeCourseEntries() {
+
     this.parsedEntries.forEach(parsedEntry => {
 
       parsedEntry.weeks.forEach(week => {
@@ -201,7 +205,8 @@ export class CoursesService {
           room: parsedEntry.room,
           timeStart: timeSplit[0],
           timeEnd: timeSplit[1],
-          weekNb: week
+          weekNb: week,
+          overlap: false
         };
 
         this.courseEntries.push(courseEntry);
@@ -215,7 +220,6 @@ export class CoursesService {
           });
         }
       });
-
     });
   }
 
@@ -227,7 +231,7 @@ export class CoursesService {
 
   sortCourseEntries() {
     this.selectedEntries.sort((o1, o2) => {
-      if (o1.dateEnd < o2.dateEnd) {
+      if (o1.dateEnd < o2.dateStart) {
         return -1;
       } else if (o1.dateStart > o2.dateEnd) {
         return 1;
@@ -248,30 +252,59 @@ export class CoursesService {
 
   addDaySeparators() {
     const separatedCourseEntries: CourseEntry[] = [];
-    let newDay = true;
 
-    let i;
-    for (i = 0; i < this.selectedEntries.length; i++) {
-      const currEntry = this.selectedEntries[i];
-
-      if (newDay) {
-        const dividerEntry = {... currEntry};
-        dividerEntry.courseName = '$$DIVIDER$$';
-        separatedCourseEntries.push(dividerEntry);
-      }
-
-      if (i < this.selectedEntries.length - 1) {
-        const nextEntry = this.selectedEntries[i + 1];
-        newDay = nextEntry.dateString !== currEntry.dateString;
-      }
-      else {
-        newDay = false;
-      }
-
-      separatedCourseEntries.push(currEntry);
+    if (this.selectedEntries.length > 0) {
+      const firstDiviverEntry = {
+        ...this.selectedEntries[0]
+      };
+      firstDiviverEntry.courseName = '$$DIVIDER$$';
+      separatedCourseEntries.push(firstDiviverEntry);
     }
 
+    let i;
+    for (i = 0; i < this.selectedEntries.length - 1; i++) {
+      const currEntry = this.selectedEntries[i];
+      const nextEntry = this.selectedEntries[i + 1];
+
+      if (currEntry.dateString !== nextEntry.dateString && i !== 0) {
+        const dividerEntry = {
+          ...currEntry
+        };
+        dividerEntry.courseName = '$$DIVIDER$$';
+        separatedCourseEntries.push(dividerEntry);
+        separatedCourseEntries.push(currEntry);
+      }
+      else {
+        separatedCourseEntries.push(currEntry);
+      }
+    }
+    // separatedCourseEntries.push(this.selectedEntries[this.selectedEntries.length - 1]);
     this.selectedEntries = separatedCourseEntries;
+  }
+
+  markOverlap() {
+    const newSelectedCourseEntries: CourseEntry[] = [];
+
+    let i: number;
+    for (i = 0; i < this.selectedEntries.length - 1; i++) {
+      const currEntry = this.selectedEntries[i];
+      const nextEntry = this.selectedEntries[i + 1];
+
+      if (currEntry.dateString === nextEntry.dateString) {
+        if (currEntry.dateEnd <= nextEntry.dateStart || currEntry.dateStart >= nextEntry.dateEnd) {
+          newSelectedCourseEntries.push(currEntry);
+        } else {
+          currEntry.overlap = true;
+          nextEntry.overlap = true;
+          newSelectedCourseEntries.push(currEntry);
+        }
+      } else {
+        newSelectedCourseEntries.push(currEntry);
+      }
+    }
+
+    newSelectedCourseEntries.push(this.selectedEntries[this.selectedEntries.length - 1]);
+    this.selectedEntries = newSelectedCourseEntries;
   }
 
 }

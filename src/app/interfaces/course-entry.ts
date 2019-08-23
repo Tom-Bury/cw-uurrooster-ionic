@@ -10,4 +10,5 @@ export interface CourseEntry {
     dateString: string;
     opo: string;
     ola: string;
+    overlap: boolean;
 }
