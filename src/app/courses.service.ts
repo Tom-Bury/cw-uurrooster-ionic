@@ -53,18 +53,21 @@ export class CoursesService {
   nbCols1 = 19;
   nbNonWeekCols1 = 6;
   year1 = 2019;
+  dummy1 = '/assets/dummyData.html';
 
   url2 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_2.html';
   startWeek2 = 7;
   nbCols2 = 21;
   nbNonWeekCols2 = 6;
   year2 = 2020;
+  dummy2 = '/assets/dummyData2.html';
 
   URL = this.url1;
   NB_COLS = this.nbCols1;
   NB_NON_WEEK_COLS = this.nbNonWeekCols1;
   START_WEEK = this.startWeek1;
   YEAR = this.year1;
+  DUMMY = this.dummy1;
 
   constructor(
     private oldHttp: HttpClient,
@@ -84,7 +87,6 @@ export class CoursesService {
     this.filterCourseEntries();
     this.sortCourseEntries();
     this.markOverlap();
-    // this.addDaySeparators();
     this.groupByDay();
     return this.daySelectedEntries;
   }
@@ -130,7 +132,7 @@ export class CoursesService {
   }
 
   getDataFromAssets() {
-    const obs = this.oldHttp.get('/assets/dummyData.html');
+    const obs = this.oldHttp.get(this.DUMMY);
 
     obs.subscribe(data => {
       console.log('DATA', data);
@@ -147,7 +149,8 @@ export class CoursesService {
   parseData() {
     const parsedData = parse(this.rawData);
     const table = parsedData.childNodes[0].childNodes[5];
-    const tableRows = table.childNodes.filter(row => row.nodeType !== 3).slice(3);
+    let tableRows = table.childNodes.filter(row => row.nodeType !== 3).slice(3);
+    tableRows = tableRows.filter(row => !row.toString().startsWith('<tr><td style'));
 
     tableRows.forEach(row => {
       const cols = row.childNodes;
@@ -157,11 +160,17 @@ export class CoursesService {
 
       cols.forEach(col => {
 
-        if (col.childNodes.length > 0) {
+        if (colNb < this.NB_NON_WEEK_COLS) {
           // First columns
-          const data = col.childNodes[0].rawText;
-          courseData.push(data);
-          // console.log(data);
+          if (col.childNodes.length > 0 ) {
+            const data = col.childNodes[0].rawText;
+            courseData.push(data);
+            // console.log(data);
+          }
+          else {
+            courseData.push('NO DATA');
+          }
+          
         } else if (col.toString() !== '<td></td>') {
           // Week columns
           const week = colNb - this.NB_NON_WEEK_COLS + this.START_WEEK;
@@ -254,35 +263,7 @@ export class CoursesService {
     return [new Date(year, 0, day, +start[0], +start[1]), new Date(year, 0, day, +end[0], +end[1])];
   }
 
-  addDaySeparators() {
-    const separatedCourseEntries: CourseEntry[] = [];
 
-    if (this.selectedEntries.length > 0) {
-      let firstDiviverEntry = {
-        ...this.selectedEntries[0]
-      };
-      firstDiviverEntry.courseName = '$$DIVIDER$$';
-      separatedCourseEntries.push(firstDiviverEntry);
-    }
-
-    let i;
-    for (i = 0; i < this.selectedEntries.length - 1; i++) {
-      const currEntry = this.selectedEntries[i];
-      const nextEntry = this.selectedEntries[i + 1];
-
-      if (currEntry.dateString !== nextEntry.dateString && i !== 0) {
-        const dividerEntry = {
-          ...currEntry
-        };
-        dividerEntry.courseName = '$$DIVIDER$$';
-        separatedCourseEntries.push(dividerEntry); 
-      }
-
-      separatedCourseEntries.push(currEntry);
-    }
-    // separatedCourseEntries.push(this.selectedEntries[this.selectedEntries.length - 1]);
-    this.selectedEntries = separatedCourseEntries;
-  }
 
   markOverlap() {
     const newSelectedCourseEntries: CourseEntry[] = [];
@@ -296,12 +277,13 @@ export class CoursesService {
         !(currEntry.dateEnd <= nextEntry.dateStart || currEntry.dateStart >= nextEntry.dateEnd)) {
         currEntry.overlap = true;
         nextEntry.overlap = true;
-        console.log('OVERLAP: ', currEntry, nextEntry);
       }
       newSelectedCourseEntries.push(currEntry);
     }
 
-    newSelectedCourseEntries.push(this.selectedEntries[this.selectedEntries.length - 1]);
+    if (this.selectedEntries.length > 0) {
+      newSelectedCourseEntries.push(this.selectedEntries[this.selectedEntries.length - 1]);
+    }
     this.selectedEntries = newSelectedCourseEntries;
   }
 
@@ -323,6 +305,45 @@ export class CoursesService {
       }
       currDayEntries.push(entry);
     });
+  }
 
+  switchSemester() {
+    this.rawData = '';
+    this.parsedEntries = [];
+    this.courseEntries = [];
+    this.selectedEntries = [];
+    this.daySelectedEntries = [];
+
+    this.allCourseOPOs = new Set([]);
+    this.allCourses = [];
+    this.coursesFilter = [];
+
+    if (this.getCurrentSemester() === 1) {
+      this.URL = this.url2;
+      this.NB_COLS = this.nbCols2;
+      this.NB_NON_WEEK_COLS = this.nbNonWeekCols2;
+      this.START_WEEK = this.startWeek2;
+      this.YEAR = this.year2;
+      this.DUMMY = this.dummy2;
+      this.coursesFilter = ['H09J2A'];
+    }
+    else {
+      this.URL = this.url1;
+      this.NB_COLS = this.nbCols1;
+      this.NB_NON_WEEK_COLS = this.nbNonWeekCols1;
+      this.START_WEEK = this.startWeek1;
+      this.YEAR = this.year1;
+      this.DUMMY = this.dummy1;
+    }
+    // this.init();
+  }
+
+  getCurrentSemester(): number {
+    if (this.URL === this.url1) {
+      return 1;
+    }
+    else {
+      return 2;
+    }
   }
 }

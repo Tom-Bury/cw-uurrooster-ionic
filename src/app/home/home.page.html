@@ -16,10 +16,18 @@
 
 <ion-content>
 
+  <ion-card *ngIf="selectedEntries.length === 0" padding>
+    <ion-card-title text-center>
+      Nothing here!
+    </ion-card-title>
 
-  <ion-list>
+    <ion-card-content>
+      There are no courses available or you forgot to select courses.
+    </ion-card-content>
+  </ion-card>
 
 
+  <ion-list *ngIf="selectedEntries.length !== 0">
 
     <div *ngFor="let day of selectedEntries">
 
@@ -57,62 +65,7 @@
         </ion-item-options>
       </ion-item-sliding>
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!-- <ion-item-sliding *ngFor="let course of selectedEntries">
-      <ion-list-header *ngIf="course.courseName === '$$DIVIDER$$'" color="light">
-        <ion-label>{{ course.day}} {{ course.dateString }}</ion-label>
-      </ion-list-header>
-
-      <ion-item *ngIf="course.courseName !== '$$DIVIDER$$'">
-
-        <ion-grid>
-          <ion-row>
-            <ion-col *ngIf="!course.overlap" size="4">
-              <h3>{{ course.dateString }}</h3>
-              <h3>{{ course.timeStart }} - {{ course.timeEnd }}</h3>
-              <h5>{{ course.room }}</h5>
-            </ion-col>
-
-            <ion-col *ngIf="course.overlap" size="4" class="overlap">
-                <h3>{{ course.dateString }}</h3>
-                <h3>{{ course.timeStart }} - {{ course.timeEnd }}</h3>
-                <h5>{{ course.room }}</h5>
-              </ion-col>
-
-            <ion-col text-wrap>
-              <h3>{{ course.courseName }}</h3>
-            </ion-col>
-
-          </ion-row>
-        </ion-grid>
-
-      </ion-item>
-
-      <ion-item-options side="end">
-        <ion-item-option>TODO</ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding> -->
   </ion-list>
+
+
 </ion-content>

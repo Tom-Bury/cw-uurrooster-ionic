@@ -22,9 +22,8 @@ import { CoursesService } from '../courses.service';
 export class HomePage implements OnInit {
 
   rawData = '';
-  parsedData: ParsedEntry[] = [];
-  courseEntries: CourseEntry[] = [];
   selectedEntries: CourseEntry[][] = [];
+  currSem: number;
 
 
   constructor(
@@ -40,8 +39,7 @@ export class HomePage implements OnInit {
 
     this.events.subscribe('data-ready', () => {
       this.selectedEntries = this.coursesSvc.getSelectedEntries();
-      console.log(this.selectedEntries);
-      
+      this.currSem = this.coursesSvc.getCurrentSemester();
       spinner.dismiss();
     });
 
@@ -50,7 +48,7 @@ export class HomePage implements OnInit {
 
   ionViewWillEnter() {
     this.selectedEntries = this.coursesSvc.getSelectedEntries();
-    console.log(this.selectedEntries);
+    console.log('HOME AGAIN', this.selectedEntries);
   }
 
 }
