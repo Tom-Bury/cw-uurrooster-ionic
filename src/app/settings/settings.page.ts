@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CoursesService } from '../courses.service';
 import { SettingsEntry } from '../interfaces/settings-entry';
 import { Events, LoadingController } from '@ionic/angular';
+import { CourseEntry } from '../interfaces/course-entry';
 
 @Component({
   selector: 'app-settings',
@@ -25,6 +26,7 @@ export class SettingsPage implements OnInit {
     this.currSem = this.coursesSvc.getCurrentSemester();
     this.allCourses = this.coursesSvc.getAllCourses();
     this.selectedCourses = this.coursesSvc.getFilter();
+    this.renameCourses();
     this.justHadInit = true;
 
     // if (this.currSem === 1) {
@@ -55,6 +57,15 @@ export class SettingsPage implements OnInit {
         spinner.dismiss();
     });
     }
+  }
+
+  renameCourses() {
+    this.allCourses.forEach(entry => {
+      if (entry.courseName.includes(':') && !entry.courseName.toLowerCase().startsWith('capita')) {
+        const colonPos = entry.courseName.indexOf(':');
+        entry.courseName = entry.courseName.substring(0, colonPos);
+      }
+    });
   }
 
 }
