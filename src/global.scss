@@ -26,7 +26,12 @@
 @import "~@ionic/angular/css/flex-utils.css";
 
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6, p {
     font-size: 1em;
     margin: 0
 }
@@ -36,6 +41,20 @@ h5 {
     color: gray;
 }
 
-h3 {
+h4 {
     font-size: 1em;
+    color: gray;
+}
+
+h3, p {
+    font-size: 1em;
+    font-style: normal;
+}
+
+hr {
+    background: black;
+}
+
+.week-separator {
+    background-color: #f4f5f8;
 }

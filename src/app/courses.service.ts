@@ -290,6 +290,7 @@ export class CoursesService {
   groupByDay() {
     let prevDateStr = '-1';
     let currDayEntries = [];
+    let currWeekNb = -1;
     this.daySelectedEntries = [];
 
     this.selectedEntries.forEach(entry => {
@@ -300,7 +301,10 @@ export class CoursesService {
         }
         prevDateStr = entry.dateString;
         const divider = {... entry};
-        divider.courseName = '$$DIVIDER$$';
+        if (entry.weekNb !== currWeekNb) {
+          currWeekNb = entry.weekNb;
+          divider.courseName = '$$NEW-WEEK$$';
+        }
         currDayEntries.push(divider);
       }
       currDayEntries.push(entry);

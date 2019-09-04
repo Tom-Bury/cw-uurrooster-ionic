@@ -21,7 +21,7 @@
       Nothing here!
     </ion-card-title>
 
-    <ion-card-content>
+    <ion-card-content padding>
       There are no courses available or you forgot to select courses.
     </ion-card-content>
   </ion-card>
@@ -31,8 +31,23 @@
 
     <div *ngFor="let day of selectedEntries">
 
-      <ion-list-header color="light">
-        <ion-label>{{ day[0].day }} {{ day[0].dateString }}</ion-label>
+      <ion-list-header class="ion-text-start" no-padding>
+
+        <ion-grid>
+          <ion-row  *ngIf="day[0].courseName === '$$NEW-WEEK$$'" color="primary">
+            <ion-col>
+              <div class="week-separator" text-center>
+                  <h4 padding>Week {{ day[0].weekNb }}</h4>
+              </div>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-label>{{ day[0].day }} {{ day[0].dateString }}</ion-label>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
       </ion-list-header>
 
       <ion-item-sliding *ngFor="let course of day.slice(1)">
@@ -46,13 +61,12 @@
               </ion-col>
 
               <ion-col *ngIf="course.overlap" size="4" class="overlap">
-                <h3>{{ course.dateString }}</h3>
                 <h3>{{ course.timeStart }} - {{ course.timeEnd }}</h3>
                 <h5>{{ course.room }}</h5>
               </ion-col>
 
               <ion-col text-wrap>
-                <h3>{{ course.courseName }}</h3>
+                <h2>{{ course.courseName }}</h2>
               </ion-col>
 
             </ion-row>
