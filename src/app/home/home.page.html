@@ -23,6 +23,15 @@
 
     <ion-card-content padding>
       There are no courses available or you forgot to select courses.
+
+      <div text-center margin-top>
+          <ion-button [routerLink]="['/settings']" color="primary" fill="outline">
+            <ion-icon name="settings" slot="start"></ion-icon>
+            Select courses
+          </ion-button>
+      </div>
+
+      
     </ion-card-content>
   </ion-card>
 
@@ -34,10 +43,10 @@
       <ion-list-header class="ion-text-start" no-padding>
 
         <ion-grid>
-          <ion-row  *ngIf="day[0].courseName === '$$NEW-WEEK$$'" color="primary">
+          <ion-row *ngIf="day[0].courseName === '$$NEW-WEEK$$'" color="primary">
             <ion-col>
               <div class="week-separator" text-center>
-                  <h4 padding>Week {{ day[0].weekNb }}</h4>
+                <h4 padding>Week {{ day[0].weekNb }}</h4>
               </div>
             </ion-col>
           </ion-row>
