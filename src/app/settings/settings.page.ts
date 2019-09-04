@@ -1,8 +1,20 @@
-import { Component, OnInit } from '@angular/core';
-import { CoursesService } from '../courses.service';
-import { SettingsEntry } from '../interfaces/settings-entry';
-import { Events, LoadingController } from '@ionic/angular';
-import { CourseEntry } from '../interfaces/course-entry';
+import {
+  Component,
+  OnInit,
+  ViewChild
+} from '@angular/core';
+import {
+  CoursesService
+} from '../courses.service';
+import {
+  SettingsEntry
+} from '../interfaces/settings-entry';
+import {
+  Events,
+  LoadingController,
+  IonContent
+} from '@ionic/angular';
+
 
 @Component({
   selector: 'app-settings',
@@ -11,33 +23,29 @@ import { CourseEntry } from '../interfaces/course-entry';
 })
 export class SettingsPage implements OnInit {
 
+  @ViewChild(IonContent, null) content: IonContent;
+
   allCourses: SettingsEntry[] = [];
   selectedCourses: string[] = [];
   currSem: number;
-  justHadInit = false;
+  justHadInit = true;
 
   constructor(
     public coursesSvc: CoursesService,
     private events: Events,
     private loadingCtrl: LoadingController
-  ) { }
+  ) {}
 
-  ngOnInit() {
-    this.currSem = this.coursesSvc.getCurrentSemester();
-    this.allCourses = this.coursesSvc.getAllCourses();
-    this.selectedCourses = this.coursesSvc.getFilter();
-    this.renameCourses();
-    this.justHadInit = true;
+  async ngOnInit() {
+    this.fetchData();
 
-    // if (this.currSem === 1) {
-    //   document.getElementById('seg-sem1').setAttribute('checked', 'true');
-    //   document.getElementById('seg-sem2').setAttribute('checked', 'false');
-    // } else {
-    //   document.getElementById('seg-sem1').setAttribute('checked', 'false');
-    //   document.getElementById('seg-sem2').setAttribute('checked', 'true');
-    // }
-
-    this.justHadInit = false;
+    if (this.currSem === 1) {
+      document.getElementById('seg-sem1').setAttribute('checked', 'true');
+      document.getElementById('seg-sem2').setAttribute('checked', 'false');
+    } else {
+      document.getElementById('seg-sem1').setAttribute('checked', 'false');
+      document.getElementById('seg-sem2').setAttribute('checked', 'true');
+    }
   }
 
   onCourseSelected(opo: string) {
@@ -49,15 +57,20 @@ export class SettingsPage implements OnInit {
     if (!this.justHadInit) {
       const spinner = await this.loadingCtrl.create();
       await spinner.present();
-
       this.coursesSvc.switchSemester();
 
       this.events.subscribe('data-ready', () => {
-        this.ngOnInit();
+        this.fetchData();
         spinner.dismiss();
-    });
+        this.content.scrollToTop();
+      });
+    }
+    else {
+      this.justHadInit = false;
     }
   }
+
+
 
   renameCourses() {
     this.allCourses.forEach(entry => {
@@ -66,6 +79,13 @@ export class SettingsPage implements OnInit {
         entry.courseName = entry.courseName.substring(0, colonPos);
       }
     });
+  }
+
+  fetchData() {
+    this.currSem = this.coursesSvc.getCurrentSemester();
+    this.allCourses = this.coursesSvc.getAllCourses();
+    this.selectedCourses = this.coursesSvc.getFilter();
+    this.renameCourses();
   }
 
 }

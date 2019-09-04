@@ -170,7 +170,6 @@ export class CoursesService {
           else {
             courseData.push('NO DATA');
           }
-          
         } else if (col.toString() !== '<td></td>') {
           // Week columns
           const week = colNb - this.NB_NON_WEEK_COLS + this.START_WEEK;
@@ -329,7 +328,7 @@ export class CoursesService {
       this.START_WEEK = this.startWeek2;
       this.YEAR = this.year2;
       this.DUMMY = this.dummy2;
-      this.coursesFilter = ['H09J2A'];
+      this.coursesFilter = [];
     }
     else {
       this.URL = this.url1;
@@ -339,7 +338,7 @@ export class CoursesService {
       this.YEAR = this.year1;
       this.DUMMY = this.dummy1;
     }
-    // this.init();
+    this.init();
   }
 
   getCurrentSemester(): number {
