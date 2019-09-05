@@ -88,4 +88,8 @@ export class SettingsPage implements OnInit {
     this.renameCourses();
   }
 
+
+  ionViewWillLeave() {
+    this.coursesSvc.saveFilterToDB();
+  }
 }

@@ -24,18 +24,12 @@ import {
 import {
   SettingsEntry
 } from './interfaces/settings-entry';
-import {
-  filter
-} from 'rxjs/operators';
-
-import {
-  NativeStorage
-} from '@ionic-native/native-storage/ngx';
-
 
 import {
   parse
 } from 'node-html-parser';
+
+import { Storage } from '@ionic/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -79,11 +73,14 @@ export class CoursesService {
     private oldHttp: HttpClient,
     private http: HTTP,
     private events: Events,
-    private storage: NativeStorage
+    private storage: Storage
   ) {}
 
   init() {
-    this.fetchData();
+    this.storage.ready().then(() => {
+      this.fetchFilterFromDB();
+      this.fetchData();
+    });
   }
 
   sendEvent() {
@@ -325,7 +322,6 @@ export class CoursesService {
       this.START_WEEK = this.startWeek2;
       this.YEAR = this.year2;
       this.DUMMY = this.dummy2;
-      this.coursesFilter = [];
     } else {
       this.URL = this.url1;
       this.NB_COLS = this.nbCols1;
@@ -350,18 +346,6 @@ export class CoursesService {
 
 
   getFilter() {
-    const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
-    console.log('GET FILTER ');
-
-
-    this.storage.getItem(key)
-      .then(data => {
-          console.log(data);
-          this.coursesFilter = data;
-        },
-        error => console.error(error)
-      );
-
     return this.coursesFilter;
   }
 
@@ -373,13 +357,32 @@ export class CoursesService {
     } else {
       this.coursesFilter.push(opo);
     }
+  }
 
+
+  saveFilterToDB() {
     const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
 
-    this.storage.setItem(key, this.coursesFilter)
+    this.storage.set(key, this.coursesFilter)
       .then(
-        () => console.log('Stored item!'),
+        () => console.log('Stored filter!', this.coursesFilter),
         error => console.error('Error storing item', error)
       );
+  }
+
+  fetchFilterFromDB() {
+    const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
+    console.log('GET FILTER ');
+
+
+    this.storage.get(key).then((filter) => {
+      console.log('Fetched filter: ', filter);
+
+      if (filter === null) {
+        filter = [];
+      }
+
+      this.coursesFilter = filter;
+    });
   }
 }

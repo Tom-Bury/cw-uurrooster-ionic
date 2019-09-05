@@ -33,8 +33,9 @@ import {
 import {
   HTTP
 } from '@ionic-native/http/ngx';
-import { NativeStorage } from '@ionic-native/native-storage/ngx';
 
+
+import { IonicStorageModule } from '@ionic/storage';
 
 
 @NgModule({
@@ -43,6 +44,7 @@ import { NativeStorage } from '@ionic-native/native-storage/ngx';
   imports: [
     BrowserModule,
     IonicModule.forRoot(),
+    IonicStorageModule.forRoot(),
     AppRoutingModule,
     HttpClientModule
   ],
@@ -54,7 +56,6 @@ import { NativeStorage } from '@ionic-native/native-storage/ngx';
       useClass: IonicRouteStrategy
     },
     HTTP,
-    NativeStorage
   ],
   bootstrap: [AppComponent]
 })

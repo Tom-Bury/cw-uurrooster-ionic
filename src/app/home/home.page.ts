@@ -48,7 +48,10 @@ export class HomePage implements OnInit {
 
   ionViewWillEnter() {
     this.selectedEntries = this.coursesSvc.getSelectedEntries();
-    console.log('HOME AGAIN', this.selectedEntries);
+  }
+
+  ionViewWillLeave() {
+    this.coursesSvc.saveFilterToDB();
   }
 
 }
