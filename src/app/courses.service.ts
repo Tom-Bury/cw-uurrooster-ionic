@@ -28,6 +28,10 @@ import {
   filter
 } from 'rxjs/operators';
 
+import {
+  NativeStorage
+} from '@ionic-native/native-storage/ngx';
+
 
 import {
   parse
@@ -47,6 +51,8 @@ export class CoursesService {
   allCourseOPOs: Set < string > = new Set([]);
   allCourses: SettingsEntry[] = [];
   coursesFilter: string[] = ['H04G1B'];
+
+  FILTER_KEY_BASE = 'courses-filter-sem-';
 
   url1 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html';
   startWeek1 = 39;
@@ -72,7 +78,8 @@ export class CoursesService {
   constructor(
     private oldHttp: HttpClient,
     private http: HTTP,
-    private events: Events
+    private events: Events,
+    private storage: NativeStorage
   ) {}
 
   init() {
@@ -91,19 +98,6 @@ export class CoursesService {
     return this.daySelectedEntries;
   }
 
-  toggleEntrySelectionInFilter(opo) {
-    if (this.coursesFilter.includes(opo)) {
-      this.coursesFilter = this.coursesFilter.filter(o => {
-        return o !== opo;
-      });
-    } else {
-      this.coursesFilter.push(opo);
-    }
-  }
-
-  getFilter() {
-    return this.coursesFilter;
-  }
 
   getAllCourses() {
     return this.allCourses.sort((o1, o2) => {
@@ -118,9 +112,10 @@ export class CoursesService {
   }
 
   fetchData() {
-    const httpCall = this.http.get('URL', {}, {});
+    const httpCall = this.http.get(this.URL, {}, {});
     from(httpCall)
       .subscribe(data => {
+        console.log('Http response data: ', data);
         this.rawData = data.data;
         this.parseData();
         this.makeCourseEntries();
@@ -135,9 +130,9 @@ export class CoursesService {
     const obs = this.oldHttp.get(this.DUMMY);
 
     obs.subscribe(data => {
-      console.log('DATA', data);
+      console.log('Data from assets: ', data);
     }, err => {
-      console.log('ERR', err);
+      console.log('Error from assets: ', err);
       this.rawData = err.error.text;
 
       this.parseData();
@@ -162,12 +157,11 @@ export class CoursesService {
 
         if (colNb < this.NB_NON_WEEK_COLS) {
           // First columns
-          if (col.childNodes.length > 0 ) {
+          if (col.childNodes.length > 0) {
             const data = col.childNodes[0].rawText;
             courseData.push(data);
             // console.log(data);
-          }
-          else {
+          } else {
             courseData.push('NO DATA');
           }
         } else if (col.toString() !== '<td></td>') {
@@ -236,6 +230,7 @@ export class CoursesService {
   }
 
   filterCourseEntries() {
+    this.getFilter();
     this.selectedEntries = this.courseEntries.filter(entry => {
       return this.coursesFilter.includes(entry.opo);
     });
@@ -299,7 +294,9 @@ export class CoursesService {
           currDayEntries = [];
         }
         prevDateStr = entry.dateString;
-        const divider = {... entry};
+        const divider = {
+          ...entry
+        };
         if (entry.weekNb !== currWeekNb) {
           currWeekNb = entry.weekNb;
           divider.courseName = '$$NEW-WEEK$$';
@@ -329,8 +326,7 @@ export class CoursesService {
       this.YEAR = this.year2;
       this.DUMMY = this.dummy2;
       this.coursesFilter = [];
-    }
-    else {
+    } else {
       this.URL = this.url1;
       this.NB_COLS = this.nbCols1;
       this.NB_NON_WEEK_COLS = this.nbNonWeekCols1;
@@ -344,9 +340,46 @@ export class CoursesService {
   getCurrentSemester(): number {
     if (this.URL === this.url1) {
       return 1;
-    }
-    else {
+    } else {
       return 2;
     }
+  }
+
+
+
+
+
+  getFilter() {
+    const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
+    console.log('GET FILTER ');
+
+
+    this.storage.getItem(key)
+      .then(data => {
+          console.log(data);
+          this.coursesFilter = data;
+        },
+        error => console.error(error)
+      );
+
+    return this.coursesFilter;
+  }
+
+  toggleEntrySelectionInFilter(opo) {
+    if (this.coursesFilter.includes(opo)) {
+      this.coursesFilter = this.coursesFilter.filter(o => {
+        return o !== opo;
+      });
+    } else {
+      this.coursesFilter.push(opo);
+    }
+
+    const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
+
+    this.storage.setItem(key, this.coursesFilter)
+      .then(
+        () => console.log('Stored item!'),
+        error => console.error('Error storing item', error)
+      );
   }
 }
