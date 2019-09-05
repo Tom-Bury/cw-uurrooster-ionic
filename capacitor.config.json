@@ -3,5 +3,10 @@
   "appName": "cw-uurrooster",
   "bundledWebRuntime": false,
   "npmClient": "npm",
-  "webDir": "www"
+  "webDir": "www",
+  "SplashScreen": {
+    "androidSpinnerStyle": "horizontal",
+    "spinnerColor": "#000000",
+    "showSpinner": true
+  }
 }

@@ -13,6 +13,12 @@ import {
 } from '../interfaces/course-entry';
 import { CoursesService } from '../courses.service';
 
+import { Plugins } from '@capacitor/core';
+const { SplashScreen } = Plugins;
+
+
+
+
 
 @Component({
   selector: 'app-home',
@@ -34,6 +40,8 @@ export class HomePage implements OnInit {
   }
 
   async ngOnInit() {
+    // Hide the splash (you should do this on app launch)
+    
     const spinner = await this.loadingCtrl.create();
     await spinner.present();
 
@@ -41,6 +49,7 @@ export class HomePage implements OnInit {
       this.selectedEntries = this.coursesSvc.getSelectedEntries();
       this.currSem = this.coursesSvc.getCurrentSemester();
       spinner.dismiss();
+      SplashScreen.hide();
     });
 
     this.coursesSvc.init();

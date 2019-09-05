@@ -29,7 +29,9 @@ import {
   parse
 } from 'node-html-parser';
 
-import { Storage } from '@ionic/storage';
+import {
+  Storage
+} from '@ionic/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +49,7 @@ export class CoursesService {
   coursesFilter: string[] = ['H04G1B'];
 
   FILTER_KEY_BASE = 'courses-filter-sem-';
+  DATA_KEY_BASE = 'courses-data-sem-';
 
   url1 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html';
   startWeek1 = 39;
@@ -114,9 +117,20 @@ export class CoursesService {
       .subscribe(data => {
         console.log('Http response data: ', data);
         this.rawData = data.data;
-        this.parseData();
-        this.makeCourseEntries();
-        this.sendEvent();
+
+        const key = this.DATA_KEY_BASE + this.getCurrentSemester();
+
+        this.storage.set(key, data.data)
+          .then(
+            () => {
+              this.parseData();
+              this.makeCourseEntries();
+              this.sendEvent();
+            },
+            error => console.error('Error storing item', error)
+          );
+
+
       }, err => {
         console.log('Native Call error: ', err);
         this.getDataFromAssets();
@@ -124,18 +138,34 @@ export class CoursesService {
   }
 
   getDataFromAssets() {
-    const obs = this.oldHttp.get(this.DUMMY);
 
-    obs.subscribe(data => {
-      console.log('Data from assets: ', data);
-    }, err => {
-      console.log('Error from assets: ', err);
-      this.rawData = err.error.text;
+    const key = this.DATA_KEY_BASE + this.getCurrentSemester();
 
-      this.parseData();
-      this.makeCourseEntries();
-      this.sendEvent();
+    this.storage.get(key).then((oldData) => {
+      console.log('Fetched old data: ', oldData);
+
+      if (oldData !== null) {
+        this.rawData = oldData;
+        this.parseData();
+        this.makeCourseEntries();
+        this.sendEvent();
+      } else {
+        const obs = this.oldHttp.get(this.DUMMY);
+
+        obs.subscribe(data => {
+          console.log('Data from assets: ', data);
+        }, err => {
+          console.log('Error from assets: ', err);
+          this.rawData = err.error.text;
+
+          this.parseData();
+          this.makeCourseEntries();
+          this.sendEvent();
+        });
+      }
     });
+
+
   }
 
   parseData() {
