@@ -335,6 +335,8 @@ export class CoursesService {
   }
 
   switchSemester() {
+    this.saveFilterToDB();
+
     this.rawData = '';
     this.parsedEntries = [];
     this.courseEntries = [];

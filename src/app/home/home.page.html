@@ -38,7 +38,7 @@
 
   <ion-list *ngIf="selectedEntries.length !== 0">
 
-    <div *ngFor="let day of selectedEntries">
+    <div *ngFor="let day of selectedEntries"  id="{{ day[0].dateString }}">
 
       <ion-list-header class="ion-text-start" no-padding>
 
@@ -89,6 +89,13 @@
       </ion-item-sliding> -->
     </div>
   </ion-list>
+
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="scrollToToday()" color="primary">
+      <ion-icon name="calendar"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 
 
 </ion-content>

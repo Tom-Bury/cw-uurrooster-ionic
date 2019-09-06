@@ -1,9 +1,13 @@
 import {
   Component,
-  OnInit
+  OnInit,
+  ViewChild,
+  ElementRef
 } from '@angular/core';
 import {
-  LoadingController, Events
+  LoadingController,
+  Events,
+  IonList
 } from '@ionic/angular';
 import {
   ParsedEntry
@@ -11,10 +15,16 @@ import {
 import {
   CourseEntry
 } from '../interfaces/course-entry';
-import { CoursesService } from '../courses.service';
+import {
+  CoursesService
+} from '../courses.service';
 
-import { Plugins } from '@capacitor/core';
-const { SplashScreen } = Plugins;
+import {
+  Plugins
+} from '@capacitor/core';
+const {
+  SplashScreen
+} = Plugins;
 
 
 
@@ -36,20 +46,23 @@ export class HomePage implements OnInit {
     private loadingCtrl: LoadingController,
     public coursesSvc: CoursesService,
     private events: Events
-  ) {
-  }
+  ) {}
 
   async ngOnInit() {
-    // Hide the splash (you should do this on app launch)
-    
-    const spinner = await this.loadingCtrl.create();
-    await spinner.present();
 
     this.events.subscribe('data-ready', () => {
       this.selectedEntries = this.coursesSvc.getSelectedEntries();
       this.currSem = this.coursesSvc.getCurrentSemester();
-      spinner.dismiss();
-      SplashScreen.hide();
+      
+      setTimeout(() => {
+        SplashScreen.hide();
+
+        setTimeout(() => {
+          console.log('Scrolling');
+          
+          this.scrollToToday();
+        }, 100);
+      }, 100);
     });
 
     this.coursesSvc.init();
@@ -61,6 +74,29 @@ export class HomePage implements OnInit {
 
   ionViewWillLeave() {
     this.coursesSvc.saveFilterToDB();
+  }
+
+  ionViewDidEnter() {
+    this.scrollToToday();
+  }
+
+  scrollToToday() {
+    if (this.selectedEntries.length > 0) {
+      const today = new Date();
+      let closest = this.selectedEntries[0][0];
+
+      this.selectedEntries.forEach(day => {
+
+        const currDate = day[0].dateStart;
+
+        if (today > currDate) {
+          closest = day[0];
+        }
+
+      });
+
+      document.getElementById(closest.dateString).scrollIntoView({behavior: 'smooth', block: 'start', inline: 'nearest'});
+    }
   }
 
 }
