@@ -1,17 +1,12 @@
 import {
   Component,
-  OnInit,
-  ViewChild,
-  ElementRef
+  OnInit
 } from '@angular/core';
 import {
   LoadingController,
   Events,
   IonList
 } from '@ionic/angular';
-import {
-  ParsedEntry
-} from '../interfaces/parsed-entry';
 import {
   CourseEntry
 } from '../interfaces/course-entry';
@@ -22,6 +17,7 @@ import {
 import {
   Plugins
 } from '@capacitor/core';
+import { DataService } from '../data.service';
 const {
   SplashScreen
 } = Plugins;
@@ -45,31 +41,29 @@ export class HomePage implements OnInit {
   constructor(
     private loadingCtrl: LoadingController,
     public coursesSvc: CoursesService,
+    public dataSvc: DataService,
     private events: Events
   ) {}
 
   async ngOnInit() {
 
     this.events.subscribe('data-ready', () => {
-      this.selectedEntries = this.coursesSvc.getSelectedEntries();
-      this.currSem = this.coursesSvc.getCurrentSemester();
-      
+      this.selectedEntries = this.dataSvc.getSelectedEntries();
+
       setTimeout(() => {
         SplashScreen.hide();
 
         setTimeout(() => {
-          console.log('Scrolling');
-          
           this.scrollToToday();
         }, 100);
       }, 100);
     });
 
-    this.coursesSvc.init();
+    this.dataSvc.init();
   }
 
   ionViewWillEnter() {
-    this.selectedEntries = this.coursesSvc.getSelectedEntries();
+    this.selectedEntries = this.dataSvc.getSelectedEntries();
   }
 
   ionViewWillLeave() {
@@ -83,14 +77,14 @@ export class HomePage implements OnInit {
   scrollToToday() {
     if (this.selectedEntries.length > 0) {
       const today = new Date();
-      let closest = this.selectedEntries[0][0];
+      let closest = this.selectedEntries[0][0][0];
 
-      this.selectedEntries.forEach(day => {
+      this.selectedEntries.forEach(week => {
 
-        const currDate = day[0].dateStart;
+        const currDate = week[0][0].dateStart;
 
         if (today > currDate) {
-          closest = day[0];
+          closest = week[0][0];
         }
 
       });
@@ -98,5 +92,4 @@ export class HomePage implements OnInit {
       document.getElementById(closest.dateString).scrollIntoView({behavior: 'smooth', block: 'start', inline: 'nearest'});
     }
   }
-
 }
