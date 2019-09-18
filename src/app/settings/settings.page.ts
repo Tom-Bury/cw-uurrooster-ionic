@@ -14,6 +14,7 @@ import {
   LoadingController,
   IonContent
 } from '@ionic/angular';
+import { DataService } from '../data.service';
 
 
 @Component({
@@ -31,7 +32,7 @@ export class SettingsPage implements OnInit {
   justHadInit = true;
 
   constructor(
-    public coursesSvc: CoursesService,
+    public dataSvc: DataService,
     private events: Events,
     private loadingCtrl: LoadingController
   ) {}
@@ -49,15 +50,15 @@ export class SettingsPage implements OnInit {
   }
 
   onCourseSelected(opo: string) {
-    this.coursesSvc.toggleEntrySelectionInFilter(opo);
-    this.selectedCourses = this.coursesSvc.getFilter();
+    this.dataSvc.toggleEntrySelectionInFilter(opo);
+    this.selectedCourses = this.dataSvc.getFilter();
   }
 
   async onSegmentChange(evt: any) {
     if (!this.justHadInit) {
       const spinner = await this.loadingCtrl.create();
       await spinner.present();
-      this.coursesSvc.switchSemester();
+      this.dataSvc.switchSemester();
 
       this.events.subscribe('data-ready', () => {
         this.fetchData();
@@ -79,17 +80,28 @@ export class SettingsPage implements OnInit {
         entry.courseName = entry.courseName.substring(0, colonPos);
       }
     });
+
+    this.allCourses.sort((a, b) => {
+      if (a.courseName < b.courseName) {
+        return -1;
+      }
+      if (a.courseName > b.courseName) {
+        return 1;
+      }
+      // a must be equal to b
+      return 0;
+    });
   }
 
   fetchData() {
-    this.currSem = this.coursesSvc.getCurrentSemester();
-    this.allCourses = this.coursesSvc.getAllCourses();
-    this.selectedCourses = this.coursesSvc.getFilter();
+    this.currSem = this.dataSvc.getCurrentSemester();
+    this.allCourses = this.dataSvc.getAllCourses();
+    this.selectedCourses = this.dataSvc.getFilter();
     this.renameCourses();
   }
 
 
   ionViewWillLeave() {
-    this.coursesSvc.saveFilterToDB();
+    this.dataSvc.saveFilterToDB();
   }
 }

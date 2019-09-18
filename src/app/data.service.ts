@@ -22,6 +22,9 @@ import {
 import {
   CourseEntry
 } from './interfaces/course-entry';
+import {
+  SettingsEntry
+} from './interfaces/settings-entry';
 
 
 @Injectable({
@@ -31,33 +34,22 @@ export class DataService {
 
   // VARIABLES //
   rawData = '-1';
-  allEntries: CourseEntry[][] = [];
+  allEntries: CourseEntry[][][] = [];
   coursesFilter: string[] = [];
+  allCourses = {};
 
   // IMPORTANT UNIVERSAL VARIABLES //
   FILTER_KEY_BASE = 'courses-filter-sem-';
   DATA_KEY_BASE = 'courses-data-sem-';
+  SEMESTER_KEY = 'last-selected-sem';
 
   url1 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html';
-  startWeek1 = 39;
-  nbCols1 = 19;
-  nbNonWeekCols1 = 6;
-  year1 = 2019;
   dummy1 = '/assets/dummyData.html';
 
   url2 = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_2.html';
-  startWeek2 = 7;
-  nbCols2 = 21;
-  nbNonWeekCols2 = 6;
-  year2 = 2020;
   dummy2 = '/assets/dummyData2.html';
 
-  URL = this.url1;
-  NB_COLS = this.nbCols1;
-  NB_NON_WEEK_COLS = this.nbNonWeekCols1;
-  START_WEEK = this.startWeek1;
-  YEAR = this.year1;
-  DUMMY = this.dummy1;
+  currentSemester = 1;
 
   constructor(
     private oldHttp: HttpClient,
@@ -77,12 +69,28 @@ export class DataService {
   // - - - - - - - -
 
   fetchData() {
-    // Data is fetched on 3 levels (so you can debug in Chrome devtools w/o device)
-    this.fetchDataFromInternet();
+    // First fetch semester, then filter, then data from internet.
+
+    this.storage.get(this.SEMESTER_KEY).then((sem) => {
+
+      this.currentSemester = sem;
+      const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
+
+      this.storage.get(key).then((filter) => {
+
+        if (filter === null) {
+          filter = [];
+        }
+
+        this.coursesFilter = filter;
+
+        this.fetchDataFromInternet();
+      });
+    });
   }
 
   fetchDataFromInternet() {
-    const httpCall = this.http.get(this.URL, {}, {});
+    const httpCall = this.http.get(this.getUrl(), {}, {});
 
     from(httpCall)
       .subscribe(data => {
@@ -124,7 +132,7 @@ export class DataService {
   }
 
   fetchDummyDataFromAssets() {
-    const obs = this.oldHttp.get(this.DUMMY);
+    const obs = this.oldHttp.get(this.getDummy());
 
     obs.subscribe(data => {
       console.log('Dummy data from assets: ', data);
@@ -229,9 +237,7 @@ export class DataService {
             const currEntryName = cols[4].rawText;
 
             const url = cols[4].childNodes[0].rawAttrs;
-            const startIndex = url.indexOf('/e/') + 3;
-            const endIndex = url.indexOf('.htm');
-            const currOpo = url.substring(startIndex, endIndex);
+            const currOpo = url.slice(-26, -19);
 
             const courseEntry: CourseEntry = {
               courseName: currEntryName,
@@ -250,6 +256,13 @@ export class DataService {
 
             currDayEntries.push(courseEntry);
 
+            const settingsEntry: SettingsEntry = {
+              courseName: currEntryName,
+              opo: currOpo,
+              ola: currOpo
+            };
+
+            this.allCourses[currOpo] = settingsEntry;
           });
           break;
 
@@ -259,6 +272,7 @@ export class DataService {
       }
     });
 
+    currWeekEntries.push(currDayEntries);
     weekData.push(currWeekEntries);
 
     return weekData;
@@ -296,26 +310,74 @@ export class DataService {
   // INTERFACE TO OUTSIDE
   // - - - - - - - -
 
-  getCurrentSemester(): number {
-    if (this.URL === this.url1) {
-      return 1;
+  switchSemester() {
+    this.saveFilterToDB();
+
+    this.rawData = '';
+    this.allEntries = [];
+    this.allCourses = [];
+    this.coursesFilter = [];
+
+    if (this.currentSemester === 1) {
+      this.currentSemester = 2;
     } else {
-      return 2;
+      this.currentSemester = 1;
     }
+
+    this.storage.set(this.SEMESTER_KEY, this.currentSemester)
+      .then(
+        () => {
+          console.log('Stored semester!', this.currentSemester);
+          this.init();
+        },
+        error => {
+          console.error('Error storing semester', error);
+          this.init();
+        }
+      );
   }
 
-  getSelectedEntries(): CourseEntry[][] {
-    //const selectedEntries = this.filterCourseEntries();
-    // return this.markOverlap(selectedEntries);
-    return this.allEntries;
+  getCurrentSemester(): number {
+    console.log('GetCurrentSemster: ', this.currentSemester);
+    return this.currentSemester;
   }
-  
+
+  getSelectedEntries(): CourseEntry[][][] {
+    const selectedEntries = this.filterCourseEntries();
+    // return this.markOverlap(selectedEntries);
+    return selectedEntries;
+  }
+
   getFilter() {
     return this.coursesFilter;
   }
 
+  getAllCourses(): SettingsEntry[] {
+    return Object.values(this.allCourses);
+  }
 
 
+  toggleEntrySelectionInFilter(opo) {
+    if (this.coursesFilter.includes(opo)) {
+      this.coursesFilter = this.coursesFilter.filter(o => {
+        return o !== opo;
+      });
+    } else {
+      this.coursesFilter.push(opo);
+    }
+  }
+
+
+  saveFilterToDB() {
+    const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
+
+    this.storage.set(key, this.coursesFilter)
+      .then(
+        () => console.log('Stored filter!', this.coursesFilter),
+        error => console.error('Error storing item', error)
+      );
+
+  }
 
 
   // - - - - - - - -
@@ -324,13 +386,44 @@ export class DataService {
 
   filterCourseEntries() {
     const filter = this.getFilter();
-    
-    if (filter === []) {
-      return this.allEntries;
-    }
-    else {
-      //...
-      return null;
+
+    if (filter.length > 0) {
+      const filteredEntries: CourseEntry[][][] = [];
+
+      let currWeek = [];
+      let currDay = [];
+
+      this.allEntries.forEach(week => {
+
+        currWeek = [];
+
+        week.forEach(day => {
+
+          currDay = [];
+
+          day.forEach(entry => {
+
+            if (filter.includes(entry.opo)) {
+              currDay.push(entry);
+            }
+
+          });
+
+          if (currDay.length > 0) {
+            currWeek.push(currDay);
+          }
+
+        });
+
+        if (currWeek.length > 0) {
+          filteredEntries.push(currWeek);
+        }
+
+      });
+
+      return filteredEntries;
+    } else {
+      return [];
     }
 
 
@@ -346,5 +439,21 @@ export class DataService {
 
   replaceAll(str, find, replace) {
     return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
+  }
+
+  getUrl() {
+    if (this.currentSemester === 1) {
+      return this.url1;
+    } else {
+      return this.url2;
+    }
+  }
+
+  getDummy() {
+    if (this.currentSemester === 1) {
+      return this.dummy1;
+    } else {
+      return this.dummy2;
+    }
   }
 }

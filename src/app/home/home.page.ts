@@ -3,21 +3,17 @@ import {
   OnInit
 } from '@angular/core';
 import {
-  LoadingController,
-  Events,
-  IonList
+  Events
 } from '@ionic/angular';
 import {
   CourseEntry
 } from '../interfaces/course-entry';
-import {
-  CoursesService
-} from '../courses.service';
 
 import {
   Plugins
 } from '@capacitor/core';
 import { DataService } from '../data.service';
+
 const {
   SplashScreen
 } = Plugins;
@@ -34,13 +30,11 @@ const {
 export class HomePage implements OnInit {
 
   rawData = '';
-  selectedEntries: CourseEntry[][] = [];
+  selectedEntries: CourseEntry[][][] = [];
   currSem: number;
 
 
   constructor(
-    private loadingCtrl: LoadingController,
-    public coursesSvc: CoursesService,
     public dataSvc: DataService,
     private events: Events
   ) {}
@@ -67,7 +61,7 @@ export class HomePage implements OnInit {
   }
 
   ionViewWillLeave() {
-    this.coursesSvc.saveFilterToDB();
+    this.dataSvc.saveFilterToDB();
   }
 
   ionViewDidEnter() {
