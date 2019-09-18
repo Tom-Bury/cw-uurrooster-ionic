@@ -56,7 +56,7 @@
 
       <div *ngFor="let day of week">
 
-        <ion-list-header id="{{ day[0].dateString }}">
+        <ion-list-header id="{{ day[0].dateString }}" no-padding>
           <ion-grid>
               <ion-row>
                   <ion-col>
@@ -94,7 +94,7 @@
   </ion-list>
 
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" margin>
     <ion-fab-button (click)="scrollToToday()" color="primary">
       <ion-icon name="calendar"></ion-icon>
     </ion-fab-button>

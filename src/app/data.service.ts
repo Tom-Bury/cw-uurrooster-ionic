@@ -236,13 +236,23 @@ export class DataService {
             const currRoom = cols[2].rawText.split(' ').filter(el => el !== '');
             const currEntryName = cols[4].rawText;
 
+            const startHour = hours[0].split(':')[0];
+            const startMin = hours[0].split(':')[1];
+            const currStartDate = new Date(+currDate);
+            currStartDate.setHours(startHour, startMin);
+
+            const endHour = hours[1].split(':')[0];
+            const endMin = hours[1].split(':')[1];
+            const currEndDate = new Date(+currDate);
+            currEndDate.setHours(endHour, endMin);
+
             const url = cols[4].childNodes[0].rawAttrs;
             const currOpo = url.slice(-26, -19);
 
             const courseEntry: CourseEntry = {
               courseName: currEntryName,
-              dateStart: currDate,
-              dateEnd: currDate,
+              dateStart: currStartDate,
+              dateEnd: currEndDate,
               dateString: currDate.getDate() + '/' + (currDate.getMonth() + 1),
               day: currDay,
               ola: currOpo,
@@ -344,8 +354,7 @@ export class DataService {
 
   getSelectedEntries(): CourseEntry[][][] {
     const selectedEntries = this.filterCourseEntries();
-    // return this.markOverlap(selectedEntries);
-    return selectedEntries;
+    return this.markOverlap(selectedEntries);
   }
 
   getFilter() {
@@ -425,8 +434,39 @@ export class DataService {
     } else {
       return [];
     }
+  }
 
+  markOverlap(entries) {
+    const filteredEntries: CourseEntry[][][] = [];
 
+    if (entries.length > 0) {
+
+      entries.forEach(week => {
+
+        week.forEach(day => {
+
+          let i = 0;
+          while ( i + 1 < day.length) {
+            const currEntry = day[i];
+            const nextEntry = day[i + 1];
+
+            if ((currEntry.dateStart.getTime() === nextEntry.dateStart.getTime() && currEntry.dateEnd.getTime() === nextEntry.dateEnd.getTime()) ||
+            (nextEntry.dateStart <= currEntry.dateEnd)) {
+              currEntry.overlap = true;
+              nextEntry.overlap = true;
+            }
+
+            i++;
+          }
+
+        });
+      });
+
+      return entries;
+    }
+    else {
+      return [];
+    }
   }
 
   sendDataReady() {
