@@ -69,18 +69,22 @@ export class HomePage implements OnInit {
   }
 
   scrollToToday() {
+
     if (this.selectedEntries.length > 0) {
       const today = new Date();
       let closest = this.selectedEntries[0][0][0];
 
+      console.log('today', today);
+      console.log('closest start', closest);
+
       this.selectedEntries.forEach(week => {
 
-        const currDate = week[0][0].dateStart;
-
-        if (today > currDate) {
-          closest = week[0][0];
-        }
-
+        week.forEach(day => {
+          const currDate = day[0].dateStart;
+          if (today >= currDate) {
+            closest = day[0];
+          }
+        });
       });
 
       document.getElementById(closest.dateString).scrollIntoView({behavior: 'smooth', block: 'start', inline: 'nearest'});

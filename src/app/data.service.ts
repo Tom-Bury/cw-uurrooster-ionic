@@ -446,12 +446,13 @@ export class DataService {
         week.forEach(day => {
 
           let i = 0;
-          while ( i + 1 < day.length) {
+          while (i + 1 < day.length) {
             const currEntry = day[i];
             const nextEntry = day[i + 1];
 
-            if ((currEntry.dateStart.getTime() === nextEntry.dateStart.getTime() && currEntry.dateEnd.getTime() === nextEntry.dateEnd.getTime()) ||
-            (nextEntry.dateStart <= currEntry.dateEnd)) {
+            if (
+              currEntry.dateEnd > nextEntry.dateStart 
+              ) {
               currEntry.overlap = true;
               nextEntry.overlap = true;
             }
@@ -463,8 +464,7 @@ export class DataService {
       });
 
       return entries;
-    }
-    else {
+    } else {
       return [];
     }
   }
