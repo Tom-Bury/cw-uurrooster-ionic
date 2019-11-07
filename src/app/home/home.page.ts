@@ -70,6 +70,9 @@ export class HomePage implements OnInit {
 
   scrollToToday() {
 
+    console.log('Pressed!');
+    
+
     if (this.selectedEntries.length > 0) {
       const today = new Date();
       let closest = this.selectedEntries[0][0][0];

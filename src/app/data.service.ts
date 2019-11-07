@@ -73,7 +73,14 @@ export class DataService {
 
     this.storage.get(this.SEMESTER_KEY).then((sem) => {
 
+      console.log('Get semester from storage: ', sem);
+
       this.currentSemester = sem;
+
+      if (sem === null) {
+        this.currentSemester = 1;
+      }
+
       const key = this.FILTER_KEY_BASE + this.getCurrentSemester();
 
       this.storage.get(key).then((filter) => {
@@ -168,17 +175,18 @@ export class DataService {
     let startIndex = -1;
     let endIndex = -1;
 
-    htmlTag.forEach((el, i) => {
-      if (el.toString().startsWith('<hr color="black" size="4"')) {
-        if (startIndex < 0) {
-          startIndex = ++i;
-        } else {
-          endIndex = i;
-        }
+    htmlTag[1].childNodes.forEach((el, i) => {
+      if (el.toString().startsWith('<h2>') && startIndex < 0) {
+        startIndex = i;
+      }
+
+      if (el.toString().startsWith('<hr class="thick-line" />')) {
+        endIndex = i;
       }
     });
 
-    return htmlTag.slice(startIndex, endIndex);
+
+    return htmlTag[1].childNodes.slice(startIndex, endIndex);
   }
 
   removeHorizontalRules(data) {
@@ -230,6 +238,7 @@ export class DataService {
           const rows = el.childNodes;
 
           rows.forEach(row => {
+
             const cols = row.childNodes;
 
             const hours = cols[0].rawText.split('&#8212;');
@@ -247,7 +256,8 @@ export class DataService {
             currEndDate.setHours(endHour, endMin);
 
             const url = cols[4].childNodes[0].rawAttrs;
-            const currOpo = url.slice(-26, -19);
+            const dotHtmlIndex = url.indexOf('.htm');
+            const currOpo = url.slice(dotHtmlIndex - 7, dotHtmlIndex);
 
             const courseEntry: CourseEntry = {
               courseName: currEntryName,
